@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leaflet controls must appear above Tailwind overlays */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 999 !important;
+}
+
+/* Smooth corridor line transitions */
+.leaflet-overlay-pane path {
+  transition: stroke 0.5s ease, stroke-width 0.3s ease;
+}
+
+/* Scrollbar styling for side panels */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}

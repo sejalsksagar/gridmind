@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pkl
+*.egg-info/
+.venv/
+venv/
+dist/
+.env
+
+# Node
+node_modules/
+dist/
+.env.local
+.env.production
+
+# ML artifacts (commit intentionally)
+# ml/artifacts/*.pkl  ← remove this line when you want to gitignore pkl files
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Datasets (too large for git)
+datasets/*.csv
+datasets/*.json
+
+# Jupyter
+.ipynb_checkpoints/

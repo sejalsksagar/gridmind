@@ -1,0 +1,135 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Tumkur Road", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5181, 13.0400],
+          [77.5050, 13.0620],
+          [77.4900, 13.0900],
+          [77.4750, 13.1150]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Mysore Road", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5700, 12.9600],
+          [77.5400, 12.9400],
+          [77.5100, 12.9250],
+          [77.4800, 12.9100]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hosur Road", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.6200, 12.9100],
+          [77.6300, 12.8800],
+          [77.6400, 12.8500],
+          [77.6500, 12.8200]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Bellary Road 1", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5950, 13.0100],
+          [77.5900, 13.0400],
+          [77.5820, 13.0700],
+          [77.5700, 13.1000]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Bellary Road 2", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5700, 13.1000],
+          [77.5600, 13.1300],
+          [77.5500, 13.1600],
+          [77.5400, 13.1900]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Old Madras Road", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.6400, 13.0000],
+          [77.6700, 13.0150],
+          [77.7000, 13.0300],
+          [77.7300, 13.0450]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "ORR East 1", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.6800, 12.9200],
+          [77.6900, 12.9500],
+          [77.7000, 12.9800],
+          [77.7050, 13.0100]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Bannerghatta Road", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5950, 12.9100],
+          [77.5900, 12.8800],
+          [77.5850, 12.8500],
+          [77.5800, 12.8200]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Magadi Road", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5400, 12.9800],
+          [77.5200, 12.9700],
+          [77.5000, 12.9600],
+          [77.4800, 12.9500]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Kanakapura Road", "default_severity": "Low" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5700, 12.9000],
+          [77.5600, 12.8700],
+          [77.5500, 12.8400],
+          [77.5400, 12.8100]
+        ]
+      }
+    }
+  ]
+}
