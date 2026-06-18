@@ -2,14 +2,12 @@ services:
   - type: web
     name: gridmind-api
     env: python
-    region: singapore
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
     envVars:
       - key: CORS_ORIGINS
-        value: "https://gridmind.vercel.app"
-      - key: USE_MOCK_MODELS
-        value: "false"
-      - key: APP_ENV
-        value: "production"
+        value: "https://gridmind.vercel.app,http://localhost:5173"
+      - key: MAPPLS_API_KEY
+        sync: false     # set this manually in Render dashboard — never commit the key
+    runtime: python

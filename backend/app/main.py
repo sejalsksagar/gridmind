@@ -1,75 +1,84 @@
-"""
-GridMind API — FastAPI Application
-────────────────────────────────────
-Start with:
-  uvicorn app.main:app --reload --port 8000
-
-Docs at: http://localhost:8000/docs
-"""
-
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
-from app.core import get_settings
-from app.routers import prediction, simulation, recommendation, map
-from app.services.prediction import models_available
+from app.core.config import settings
+from app.routers import predict, simulate, corridors, heatpoints, diversion
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings = get_settings()
-    if settings.USE_MOCK_MODELS:
-        print("⚠️  Running in MOCK MODE — set USE_MOCK_MODELS=false to use real models")
-    else:
-        if models_available():
-            print("✅ LightGBM models loaded from ml/artifacts/")
-        else:
-            print("❌ Model pkl files not found — falling back to mock predictions")
-            print("   Run: cd ml && python train.py to generate artifacts")
+    # Try loading ML models at startup (safe — server still starts if they fail)
+    try:
+        from app.services.prediction import load_models
+        load_models()
+        app.state.models_loaded = True
+        print("✅ ML models loaded successfully")
+    except Exception as e:
+        app.state.models_loaded = False
+        print(f"⚠️  Models not loaded (mock mode active): {e}")
     yield
 
 
-settings = get_settings()
-
 app = FastAPI(
     title="GridMind API",
-    description="AI Traffic Command Center — Event-Driven Congestion Prediction for Bengaluru",
-    version="1.0.0",
+    description="AI Traffic Command Center — Gridlock Hackathon 2.0",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
+# ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=settings.CORS_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ─── Routers ──────────────────────────────────────────────────────────────────
-
-PREFIX = "/api/v1"
-
-app.include_router(prediction.router, prefix=PREFIX)
-app.include_router(simulation.router, prefix=PREFIX)
-app.include_router(recommendation.router, prefix=PREFIX)
-app.include_router(map.router, prefix=PREFIX)
+# ── Routers ───────────────────────────────────────────────────────────────────
+app.include_router(predict.router,    prefix="/api/v1", tags=["Prediction"])
+app.include_router(simulate.router,   prefix="/api/v1", tags=["Simulation"])
+app.include_router(corridors.router,  prefix="/api/v1", tags=["Corridors"])
+app.include_router(heatpoints.router, prefix="/api/v1", tags=["Heatpoints"])
+app.include_router(diversion.router,  prefix="/api/v1", tags=["Diversion"])
 
 
-# ─── Health ───────────────────────────────────────────────────────────────────
+# ── Global error handlers ─────────────────────────────────────────────────────
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": {
+                "code":    "VALIDATION_ERROR",
+                "message": "Request validation failed",
+                "fields":  [
+                    {"field": " -> ".join(str(l) for l in e["loc"]), "message": e["msg"]}
+                    for e in exc.errors()
+                ],
+            }
+        },
+    )
 
+
+@app.exception_handler(Exception)
+async def general_error_handler(request: Request, exc: Exception):
+    import logging
+    logging.error(f"Unhandled error: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"error": {"code": "INTERNAL_ERROR", "message": "An unexpected error occurred"}},
+    )
+
+
+# ── Health check ──────────────────────────────────────────────────────────────
 @app.get("/api/v1/health", tags=["Health"])
 def health():
     return {
-        "status": "ok",
-        "models_loaded": models_available(),
-        "mock_mode": settings.USE_MOCK_MODELS,
-        "version": "1.0.0",
-        "environment": settings.APP_ENV,
+        "status":        "ok",
+        "models_loaded": getattr(app.state, "models_loaded", False),
+        "version":       "2.0.0",
     }
-
-
-@app.get("/", include_in_schema=False)
-def root():
-    return {"message": "GridMind API is running. Visit /docs for API reference."}
