@@ -2,22 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Leaflet controls must appear above Tailwind overlays */
-.leaflet-top,
-.leaflet-bottom {
-  z-index: 999 !important;
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  background-color: #020617;
 }
 
-/* Smooth corridor line transitions */
-.leaflet-overlay-pane path {
-  transition: stroke 0.5s ease, stroke-width 0.3s ease;
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Scrollbar styling for side panels */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 4px;
+/* Monospace treatment for data-dense readouts — coordinates, timestamps, counts */
+.data-mono {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  letter-spacing: 0.02em;
 }
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 2px;
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0F172A;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }

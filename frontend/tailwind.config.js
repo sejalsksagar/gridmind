@@ -4,14 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        severity: {
-          low:    '#22C55E',
-          medium: '#F59E0B',
-          high:   '#EF4444',
-          severe: '#7F1D1D',
+        navy: {
+          950: '#0A0F1C',
+          900: '#0F172A',
+          800: '#1E293B',
         },
+      },
+      fontFamily: {
+        mono: ['"JetBrains Mono"', '"Courier New"', 'monospace'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'pulse-slow': 'pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },
   plugins: [],
-}
+};

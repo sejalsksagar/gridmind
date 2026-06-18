@@ -1,30 +1,24 @@
-import { useState, useCallback } from 'react'
-import type { EventInput, PredictionResponse } from '@/types'
-import { predictEvent } from '@/services/api'
+import { useState, useCallback } from 'react';
+import type { EventParams, PredictionResponse } from '../types';
+import { predictEvent } from '../api/client';
 
 export function usePrediction() {
-  const [result, setResult]     = useState<PredictionResponse | null>(null)
-  const [isLoading, setLoading] = useState(false)
-  const [error, setError]       = useState<string | null>(null)
+  const [result, setResult] = useState<PredictionResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const predict = useCallback(async (params: EventInput) => {
-    setLoading(true)
-    setError(null)
+  const predict = useCallback(async (params: EventParams) => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const data = await predictEvent(params)
-      setResult(data)
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Prediction failed'
-      setError(msg)
+      const response = await predictEvent(params);
+      setResult(response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Prediction failed');
     } finally {
-      setLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
-  const reset = useCallback(() => {
-    setResult(null)
-    setError(null)
-  }, [])
-
-  return { result, isLoading, error, predict, reset }
+  return { predict, isLoading, error, result };
 }
