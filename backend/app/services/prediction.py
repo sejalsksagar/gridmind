@@ -32,7 +32,19 @@ from app.models.schemas import EventInput
 # Constants
 # ---------------------------------------------------------------------------
 
-MODELS_DIR = Path(__file__).resolve().parents[2] / "app" / "models" / "ml"
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+possible_dirs = [
+    BASE_DIR / "models" / "ml",
+    BASE_DIR / "app" / "models" / "ml",
+]
+
+MODELS_DIR = next(
+    (p for p in possible_dirs if p.exists()),
+    possible_dirs[0]
+)
+
+print(f"Using models directory: {MODELS_DIR}")
 
 IST = ZoneInfo("Asia/Kolkata")
 
