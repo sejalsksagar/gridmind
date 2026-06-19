@@ -1,19 +1,11 @@
 import type { PredictionResponse } from '../types';
-import { SEVERITY_COLORS, SEVERITY_TAILWIND } from '../constants/corridors';
+import { SEVERITY_COLORS } from '../constants/corridors';
+import SeverityBadge from './SeverityBadge';
+import Skeleton from './Skeleton';
 
 interface PredictionPanelProps {
   prediction: PredictionResponse | null;
   isLoading: boolean;
-}
-
-function SkeletonBars() {
-  return (
-    <div className="space-y-3">
-      <div className="h-8 w-32 bg-slate-700 rounded animate-pulse" />
-      <div className="h-4 w-full bg-slate-700 rounded animate-pulse" />
-      <div className="h-4 w-2/3 bg-slate-700 rounded animate-pulse" />
-    </div>
-  );
 }
 
 export default function PredictionPanel({ prediction, isLoading }: PredictionPanelProps) {
@@ -21,7 +13,7 @@ export default function PredictionPanel({ prediction, isLoading }: PredictionPan
     <div className="bg-slate-900 rounded-lg border border-slate-800 p-4 shadow-lg space-y-4">
       <h2 className="text-white text-sm font-semibold uppercase tracking-wide">Prediction</h2>
 
-      {isLoading && <SkeletonBars />}
+      {isLoading && <Skeleton lines={3} />}
 
       {!isLoading && !prediction && (
         <p className="text-slate-400 text-sm">Submit an event to see predictions</p>
@@ -29,12 +21,7 @@ export default function PredictionPanel({ prediction, isLoading }: PredictionPan
 
       {!isLoading && prediction && (
         <div className="space-y-4">
-          <div
-            className={`inline-flex items-center gap-2 font-bold text-2xl px-4 py-2 rounded-md ${SEVERITY_TAILWIND[prediction.congestion_class]}`}
-          >
-            <span>●</span>
-            <span className="uppercase">{prediction.congestion_class}</span>
-          </div>
+          <SeverityBadge severity={prediction.congestion_class} size="lg" />
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">

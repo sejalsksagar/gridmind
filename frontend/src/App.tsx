@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import MapView from './components/map/MapView';
 import EventForm from './components/EventForm';
+import Header from './components/Header';
+import Toast from './components/Toast';
 import PredictionPanel from './components/PredictionPanel';
 import RecommendationPanel from './components/RecommendationPanel';
 import SimulationControls from './components/SimulationControls';
@@ -16,6 +18,7 @@ import {
   getHeatpoints,
   getDiversion,
 } from './api/client';
+import { DEMO_SCENARIOS } from './constants/demoScenarios';
 import type {
   EventParams,
   PredictionResponse,
@@ -47,13 +50,9 @@ function App() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [activeView, setActiveView] = useState<ActiveView>('predict');
   const [error, setError] = useState<string | null>(null);
-
-  // Auto-dismiss the error toast after 4 seconds.
-  useEffect(() => {
-    if (!error) return;
-    const timer = setTimeout(() => setError(null), 4000);
-    return () => clearTimeout(timer);
-  }, [error]);
+  const [corridorsLoading, setCorridorsLoading] = useState(false);
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
+  const [diversionLoading, setDiversionLoading] = useState(false);
 
   async function handlePredict(params: EventParams) {
     setEventParams(params);
@@ -67,15 +66,21 @@ function App() {
         result.affected_corridors.map((corridor) => [corridor.name, corridor.severity])
       );
 
+      setCorridorsLoading(true);
       const geojson = await getCorridorGeoJSON(severityMap);
       setCorridorGeoJSON(geojson);
+      setCorridorsLoading(false);
 
+      setHeatmapLoading(true);
       const heatpointsResponse = await getHeatpoints();
       setHeatpoints(heatpointsResponse.points);
+      setHeatmapLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Prediction failed');
     } finally {
       setIsLoading(false);
+      setCorridorsLoading(false);
+      setHeatmapLoading(false);
     }
   }
 
@@ -102,12 +107,23 @@ function App() {
     const endpoint = (primaryCorridor && DIVERSION_ENDPOINTS[primaryCorridor]) || DEFAULT_DIVERSION_ENDPOINT;
 
     setError(null);
+    setDiversionLoading(true);
     try {
       const result = await getDiversion(endpoint.from[0], endpoint.from[1], endpoint.to[0], endpoint.to[1]);
       setDiversionRoute(result.route_coordinates);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Diversion route failed');
+    } finally {
+      setDiversionLoading(false);
     }
+  }
+
+  // Recovery button for the live demo: one click resets to the canonical
+  // Tumkur Severe scenario and runs the full predict flow, regardless of
+  // whatever state the presenter has gotten the form into.
+  function handleRunDemo() {
+    const demoEvent = DEMO_SCENARIOS[0].event;
+    handlePredict(demoEvent);
   }
 
   const showDiversionButton =
@@ -116,30 +132,10 @@ function App() {
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 overflow-hidden relative">
       {/* Error toast */}
-      {error && (
-        <div className="absolute top-4 right-4 z-50 bg-red-900 border border-red-700 text-red-100 text-sm rounded-md px-4 py-3 shadow-lg max-w-sm">
-          {error}
-        </div>
-      )}
+      {error && <Toast message={error} type="error" onDismiss={() => setError(null)} />}
 
       {/* Header */}
-      <header className="h-14 flex-shrink-0 bg-navy-900 border-b border-slate-800 flex items-center justify-between px-5">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🚦</span>
-          <h1 className="text-white font-semibold text-base tracking-tight">
-            GridMind — AI Traffic Command Center
-          </h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
-          </span>
-          <span className="text-slate-400 text-xs font-medium data-mono uppercase tracking-wide">
-            Live
-          </span>
-        </div>
-      </header>
+      <Header hasSevereAlert={prediction?.congestion_class === 'Severe'} onRunDemo={handleRunDemo} />
 
       {/* Main 3-column area */}
       <div className="flex-1 flex overflow-hidden">
@@ -152,7 +148,12 @@ function App() {
 
         {/* Center column — Map */}
         <main className="flex-1 relative bg-slate-950">
-          <MapView onMapReady={setMapInstance} />
+          <MapView
+            onMapReady={setMapInstance}
+            corridorsLoading={corridorsLoading}
+            heatmapLoading={heatmapLoading}
+            diversionLoading={diversionLoading}
+          />
           <CorridorOverlay geojson={corridorGeoJSON} mapInstance={mapInstance} />
           <HeatmapLayer points={heatpoints} mapInstance={mapInstance} />
           <DiversionOverlay routeCoordinates={diversionRoute} mapInstance={mapInstance} />

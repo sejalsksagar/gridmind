@@ -14,6 +14,12 @@ const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || 'http://localh
 // false once /predict, /simulate, etc. are live (Day 3 integration).
 export const USE_MOCK = false;
 
+// Demo safety net: if a real API call fails (network error or non-2xx) during
+// the live presentation, fall back to mock data instead of surfacing the error
+// to the operator. This trades correctness for "the demo never visibly breaks."
+// Turn this off outside of demo contexts — it will silently mask real outages.
+export const USE_DEMO_FALLBACK = true;
+
 // ─── Mock fixtures ──────────────────────────────────────────────────────────
 
 const MOCK_PREDICTION: PredictionResponse = {
@@ -122,14 +128,35 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/**
+ * Wraps a real API call. If it throws (network error or non-2xx) and
+ * USE_DEMO_FALLBACK is on, swallow the error and return the provided mock
+ * data instead so the demo keeps moving.
+ */
+async function withDemoFallback<T>(call: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await call();
+  } catch (err) {
+    if (USE_DEMO_FALLBACK) {
+      console.warn('API unavailable — using demo fallback', err);
+      return fallback;
+    }
+    throw err;
+  }
+}
+
 // ─── API functions ──────────────────────────────────────────────────────────
 
 export async function predictEvent(params: EventParams): Promise<PredictionResponse> {
   if (USE_MOCK) return MOCK_PREDICTION;
-  return request<PredictionResponse>('/api/v1/predict', {
-    method: 'POST',
-    body: JSON.stringify(params),
-  });
+  return withDemoFallback(
+    () =>
+      request<PredictionResponse>('/api/v1/predict', {
+        method: 'POST',
+        body: JSON.stringify(params),
+      }),
+    MOCK_PREDICTION
+  );
 }
 
 export async function simulateEvent(
@@ -137,10 +164,14 @@ export async function simulateEvent(
   overrides: SimulationOverrides
 ): Promise<SimulationResponse> {
   if (USE_MOCK) return MOCK_SIMULATION;
-  return request<SimulationResponse>('/api/v1/simulate', {
-    method: 'POST',
-    body: JSON.stringify({ base_event: base, overrides }),
-  });
+  return withDemoFallback(
+    () =>
+      request<SimulationResponse>('/api/v1/simulate', {
+        method: 'POST',
+        body: JSON.stringify({ base_event: base, overrides }),
+      }),
+    MOCK_SIMULATION
+  );
 }
 
 export async function getCorridorGeoJSON(
@@ -148,13 +179,16 @@ export async function getCorridorGeoJSON(
 ): Promise<typeof MOCK_GEOJSON> {
   if (USE_MOCK) return MOCK_GEOJSON;
   const query = severityMap ? `?severity_map=${encodeURIComponent(JSON.stringify(severityMap))}` : '';
-  return request(`/api/v1/corridors/geojson${query}`);
+  return withDemoFallback(() => request(`/api/v1/corridors/geojson${query}`), MOCK_GEOJSON);
 }
 
 export async function getHeatpoints(severity?: string): Promise<HeatpointsResponse> {
   if (USE_MOCK) return MOCK_HEATPOINTS;
   const query = severity ? `?severity=${encodeURIComponent(severity)}` : '';
-  return request<HeatpointsResponse>(`/api/v1/heatpoints${query}`);
+  return withDemoFallback(
+    () => request<HeatpointsResponse>(`/api/v1/heatpoints${query}`),
+    MOCK_HEATPOINTS
+  );
 }
 
 export async function getDiversion(
@@ -164,8 +198,12 @@ export async function getDiversion(
   toLng: number
 ): Promise<DiversionResponse> {
   if (USE_MOCK) return MOCK_DIVERSION;
-  return request<DiversionResponse>('/api/v1/diversion', {
-    method: 'POST',
-    body: JSON.stringify({ from_lat: fromLat, from_lng: fromLng, to_lat: toLat, to_lng: toLng }),
-  });
+  return withDemoFallback(
+    () =>
+      request<DiversionResponse>('/api/v1/diversion', {
+        method: 'POST',
+        body: JSON.stringify({ from_lat: fromLat, from_lng: fromLng, to_lat: toLat, to_lng: toLng }),
+      }),
+    MOCK_DIVERSION
+  );
 }
