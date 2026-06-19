@@ -1,0 +1,165 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tumkur Road",
+        "corridor_id": "tumkur_road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5773, 12.9716],
+          [77.5601, 12.9890],
+          [77.5412, 13.0121],
+          [77.5185, 13.0389]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mysore Road",
+        "corridor_id": "mysore_road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5706, 12.9716],
+          [77.5490, 12.9542],
+          [77.5218, 12.9331],
+          [77.4950, 12.9102]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hosur Road",
+        "corridor_id": "hosur_road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5946, 12.9352],
+          [77.6051, 12.9101],
+          [77.6215, 12.8780],
+          [77.6412, 12.8391]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bellary Road 1",
+        "corridor_id": "bellary_road_1"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5946, 13.0012],
+          [77.5971, 13.0280],
+          [77.5998, 13.0561],
+          [77.6020, 13.0823]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bellary Road 2",
+        "corridor_id": "bellary_road_2"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.6020, 13.0823],
+          [77.6058, 13.1102],
+          [77.6089, 13.1445],
+          [77.6112, 13.1980]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ORR East 1",
+        "corridor_id": "orr_east_1"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.6412, 12.9791],
+          [77.6589, 12.9601],
+          [77.6712, 12.9352],
+          [77.6798, 12.9101]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Old Madras Road",
+        "corridor_id": "old_madras_road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.6189, 12.9891],
+          [77.6412, 13.0012],
+          [77.6678, 13.0145],
+          [77.6945, 13.0289]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Magadi Road",
+        "corridor_id": "magadi_road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5612, 12.9780],
+          [77.5378, 12.9812],
+          [77.5101, 12.9845],
+          [77.4812, 12.9878]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bannerghatta Road",
+        "corridor_id": "bannerghatta_road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5912, 12.9201],
+          [77.5845, 12.8978],
+          [77.5789, 12.8712],
+          [77.5723, 12.8401]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "West of Chord Road",
+        "corridor_id": "west_of_chord_road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [77.5412, 13.0121],
+          [77.5345, 12.9945],
+          [77.5289, 12.9745],
+          [77.5234, 12.9512]
+        ]
+      }
+    }
+  ]
+}

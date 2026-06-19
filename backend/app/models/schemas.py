@@ -130,6 +130,21 @@ class AffectedCorridor(BaseModel):
     estimated_delay_minutes: int
 
 
+# NEW — dynamic replacement for static heatpoints.json
+class HeatPoint(BaseModel):
+    """A single point for the MapmyIndia HeatmapLayer.
+
+    Generated dynamically per prediction rather than loaded from a pre-baked
+    JSON file.  Weight is driven by the predicted congestion class:
+      Low → 0.25 | Medium → 0.50 | High → 0.75 | Severe → 1.00
+    """
+    lat: float
+    lng: float
+    weight: float = Field(..., ge=0.0, le=1.0)
+    severity: str   # human-readable label, mirrors CongestionClass values
+
+
+# CHANGED — heatmap_points field added; mock_mode removed (no longer needed)
 class PredictionResponse(BaseModel):
     congestion_class: CongestionClass
     confidence: float = Field(..., ge=0.0, le=1.0)
@@ -137,6 +152,39 @@ class PredictionResponse(BaseModel):
     duration_estimate_range: tuple[int, int]
     affected_corridors: list[AffectedCorridor]
     resources: ResourceRecommendation
+    heatmap_points: list[HeatPoint] = Field(
+        default_factory=list,
+        description=(
+            "Dynamic heatmap points derived from this prediction. "
+            "Always contains at least one point at the event location. "
+            "Feed directly to mappls.HeatmapLayer — no separate /heatpoints call needed."
+        ),
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "congestion_class": "Severe",
+                "confidence": 0.972,
+                "duration_class": "Long",
+                "duration_estimate_range": [120, 240],
+                "affected_corridors": [
+                    {"name": "Tumkur Road", "severity": "Severe", "estimated_delay_minutes": 45},
+                    {"name": "Bellary Road 1", "severity": "High", "estimated_delay_minutes": 20},
+                ],
+                "resources": {
+                    "officers": 18,
+                    "barricades": 5,
+                    "diversions": 2,
+                    "signal_overrides": 3,
+                    "rationale": "Severe congestion on named corridor with road closure. Maximum deployment required.",
+                },
+                "heatmap_points": [
+                    {"lat": 13.040004, "lng": 77.518099, "weight": 1.0, "severity": "Severe"},
+                ],
+            }
+        }
+    }
 
 
 class SimulationDelta(BaseModel):
@@ -144,6 +192,7 @@ class SimulationDelta(BaseModel):
     officers: int
     barricades: int
     diversions: int
+    signal_overrides: int          # was missing — caused field to be silently dropped
     confidence_change: float
 
 
@@ -162,6 +211,5 @@ class GeoJSONResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     models_loaded: bool
-    mock_mode: bool
-    version: str = "1.0.0"
+    version: str = "2.0.0"
     environment: str
