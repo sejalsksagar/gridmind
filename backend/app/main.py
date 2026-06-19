@@ -5,12 +5,15 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
 from app.core.config import settings
-from app.routers import predict, simulate, corridors, heatpoints, diversion
+from app.routers import predict, simulate, corridors, diversion
+#
+# REMOVED: heatpoints router — heatmap points are now returned inline by
+# POST /predict as `heatmap_points`.  GET /api/v1/heatpoints is deprecated.
+# Delete app/routers/heatpoints.py and app/data/heatpoints.json when confirmed.
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Try loading ML models at startup (safe — server still starts if they fail)
     try:
         from app.services.prediction import load_models
         load_models()
@@ -18,8 +21,9 @@ async def lifespan(app: FastAPI):
         print("✅ ML models loaded successfully")
     except Exception as e:
         app.state.models_loaded = False
-        print(f"⚠️  Models not loaded (mock mode active): {e}")
+        print(f"⚠️  Models not loaded: {e}")
     yield
+    # REMOVED: no heatpoints.json teardown needed
 
 
 app = FastAPI(
@@ -39,11 +43,10 @@ app.add_middleware(
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
-app.include_router(predict.router,    prefix="/api/v1", tags=["Prediction"])
-app.include_router(simulate.router,   prefix="/api/v1", tags=["Simulation"])
-app.include_router(corridors.router,  prefix="/api/v1", tags=["Corridors"])
-app.include_router(heatpoints.router, prefix="/api/v1", tags=["Heatpoints"])
-app.include_router(diversion.router,  prefix="/api/v1", tags=["Diversion"])
+app.include_router(predict.router,  prefix="/api/v1", tags=["Prediction"])
+app.include_router(simulate.router,  prefix="/api/v1", tags=["Simulation"])
+app.include_router(corridors.router, prefix="/api/v1", tags=["Corridors"])
+app.include_router(diversion.router, prefix="/api/v1", tags=["Diversion"])
 
 
 # ── Global error handlers ─────────────────────────────────────────────────────
@@ -56,7 +59,10 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
                 "code":    "VALIDATION_ERROR",
                 "message": "Request validation failed",
                 "fields":  [
-                    {"field": " -> ".join(str(l) for l in e["loc"]), "message": e["msg"]}
+                    {
+                        "field":   " -> ".join(str(l) for l in e["loc"]),
+                        "message": e["msg"],
+                    }
                     for e in exc.errors()
                 ],
             }

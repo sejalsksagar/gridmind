@@ -1,88 +1,158 @@
 """
-Recommendation Engine
-─────────────────────
-Pure rule-based lookup — no ML needed.
-Owned by Dev 2. Maps CongestionClass → resource counts + affected corridors.
+app/services/recommendation.py
+
+Provides resource recommendations and affected-corridor lookups
+based on a predicted congestion class.
 """
 
-from app.schemas import CongestionClass, ResourceRecommendation, AffectedCorridor
+from __future__ import annotations
 
-# ─── Resource table ───────────────────────────────────────────────────────────
+from dataclasses import dataclass
+from typing import List
 
-RESOURCE_TABLE: dict[str, dict] = {
-    "Low": {
-        "officers": 2, "barricades": 0, "diversions": 0, "signal_overrides": 0,
-        "rationale": "Minor disruption. Local officer monitoring sufficient.",
-    },
-    "Medium": {
-        "officers": 5, "barricades": 1, "diversions": 0, "signal_overrides": 1,
-        "rationale": "Moderate congestion. Signal timing adjustment and barricade recommended.",
-    },
-    "High": {
-        "officers": 10, "barricades": 3, "diversions": 1, "signal_overrides": 2,
-        "rationale": "Significant corridor impact. Diversion route activation advised.",
-    },
-    "Severe": {
-        "officers": 18, "barricades": 5, "diversions": 2, "signal_overrides": 3,
-        "rationale": "Severe congestion. Maximum deployment with immediate diversions and closures.",
-    },
+from app.models.schemas import CongestionClass, AffectedCorridor, ResourceRecommendation
+
+
+# ---------------------------------------------------------------------------
+# Resource allocation table
+# (officers, barricades, diversions, signal_overrides)
+# ---------------------------------------------------------------------------
+_RESOURCES: dict[CongestionClass, tuple[int, int, int, int]] = {
+    CongestionClass.LOW:    (2,  0, 0, 0),
+    CongestionClass.MEDIUM: (5,  1, 0, 1),
+    CongestionClass.HIGH:   (10, 3, 1, 2),
+    CongestionClass.SEVERE: (18, 5, 2, 3),
 }
 
-# ─── Corridor adjacency ───────────────────────────────────────────────────────
-
-ADJACENT_CORRIDORS: dict[str, list[str]] = {
-    "Tumkur Road":        ["Bellary Road 1", "Magadi Road"],
-    "Mysore Road":        ["Kanakapura Road", "Bannerghatta Road"],
-    "Hosur Road":         ["Bannerghatta Road", "ORR East 2"],
-    "Bellary Road 1":     ["Bellary Road 2", "ORR North 1"],
-    "Old Madras Road":    ["ORR East 1", "Whitefield Main Road"],
-    "ORR East 1":         ["ORR East 2", "Old Madras Road"],
-    "ORR North 1":        ["ORR North 2", "Bellary Road 1"],
-    "Bannerghatta Road":  ["Hosur Road", "Mysore Road"],
-    "Kanakapura Road":    ["Mysore Road", "Bannerghatta Road"],
-    "Magadi Road":        ["Tumkur Road", "Mysore Road"],
+# ---------------------------------------------------------------------------
+# Rationale strings
+# ---------------------------------------------------------------------------
+_RATIONALE: dict[CongestionClass, str] = {
+    CongestionClass.LOW: (
+        "Minor impact expected. Standard patrol presence sufficient; "
+        "no active traffic management required."
+    ),
+    CongestionClass.MEDIUM: (
+        "Moderate congestion likely. Additional officers deployed for "
+        "crowd management; signal timing adjusted on primary approach."
+    ),
+    CongestionClass.HIGH: (
+        "Significant disruption anticipated. Road diversion activated, "
+        "barricades placed at key junctions, and multiple signal overrides engaged."
+    ),
+    CongestionClass.SEVERE: (
+        "Critical congestion event. Full resource deployment required — "
+        "maximum officer presence, full barricade perimeter, active diversions "
+        "on all alternate routes, and city-wide signal override protocol."
+    ),
 }
 
-SEVERITY_CASCADE: dict[str, list[str]] = {
-    "Severe": ["High", "Medium"],
-    "High":   ["Medium", "Low"],
-    "Medium": ["Low", "Low"],
-    "Low":    [],
+# ---------------------------------------------------------------------------
+# Adjacent corridor map
+# ---------------------------------------------------------------------------
+_ADJACENT_CORRIDORS: dict[str, list[str]] = {
+    "Tumkur Road":       ["Bellary Road 1", "Magadi Road"],
+    "Mysore Road":       ["Kanakapura Road", "Bannerghatta Road"],
+    "Hosur Road":        ["Bannerghatta Road", "ORR East 2"],
+    "Bellary Road 1":    ["Bellary Road 2", "ORR North 1"],
+    "ORR East 1":        ["ORR East 2", "Old Madras Road"],
+    "Old Madras Road":   ["ORR East 1", "Hosur Road"],
+    "Bannerghatta Road": ["Mysore Road", "Hosur Road"],
+    "Magadi Road":       ["Tumkur Road", "West of Chord Road"],
 }
 
-DELAY_BY_SEVERITY: dict[str, int] = {
-    "Low": 5, "Medium": 15, "High": 30, "Severe": 45,
+# ---------------------------------------------------------------------------
+# Severity cascade
+# Maps a congestion class to the classes that adjacent corridors may inherit
+# ---------------------------------------------------------------------------
+_SEVERITY_CASCADE: dict[CongestionClass, list[CongestionClass]] = {
+    CongestionClass.SEVERE: [CongestionClass.HIGH, CongestionClass.MEDIUM],
+    CongestionClass.HIGH:   [CongestionClass.MEDIUM, CongestionClass.LOW],
+    CongestionClass.MEDIUM: [CongestionClass.LOW],
+    CongestionClass.LOW:    [],
 }
 
-# ─── Public API ───────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Expected delay in minutes per congestion class
+# ---------------------------------------------------------------------------
+_DELAY_MINUTES: dict[CongestionClass, int] = {
+    CongestionClass.LOW:    5,
+    CongestionClass.MEDIUM: 15,
+    CongestionClass.HIGH:   30,
+    CongestionClass.SEVERE: 45,
+}
+
+
+# ---------------------------------------------------------------------------
+# Public data structures
+# ---------------------------------------------------------------------------
+
+# @dataclass
+# class ResourceRecommendation:
+#     congestion_class: str
+#     officers: int
+#     barricades: int
+#     diversions: int
+#     signal_overrides: int
+#     rationale: str
+
+
+# @dataclass
+# class AffectedCorridor:
+#     name: str
+#     cascaded_severity: str
+#     expected_delay_minutes: int
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 
 def recommend(congestion_class: CongestionClass) -> ResourceRecommendation:
-    return ResourceRecommendation(**RESOURCE_TABLE[congestion_class.value])
+    """
+    Return a ResourceRecommendation for the given congestion class,
+    including officer counts, infrastructure resources, and a rationale string.
+    """
+    officers, barricades, diversions, signal_overrides = _RESOURCES[congestion_class]
+    return ResourceRecommendation(
+        congestion_class=congestion_class.value,
+        officers=officers,
+        barricades=barricades,
+        diversions=diversions,
+        signal_overrides=signal_overrides,
+        rationale=_RATIONALE[congestion_class],
+    )
 
 
 def get_affected_corridors(
     corridor: str,
     congestion_class: CongestionClass,
-) -> list[AffectedCorridor]:
-    result: list[AffectedCorridor] = [
-        AffectedCorridor(
-            name=corridor,
-            severity=congestion_class,
-            estimated_delay_minutes=DELAY_BY_SEVERITY[congestion_class.value],
-        )
-    ]
+) -> List[AffectedCorridor]:
+    """
+    Return a list of AffectedCorridor objects for each corridor adjacent to
+    *corridor*, annotated with the cascaded severity class and expected delay.
 
-    adjacent = ADJACENT_CORRIDORS.get(corridor, [])
-    cascade = SEVERITY_CASCADE.get(congestion_class.value, [])
+    If *corridor* is not in the adjacency map an empty list is returned.
+    """
+    adjacent_names = _ADJACENT_CORRIDORS.get(corridor, [])
+    cascaded_classes = _SEVERITY_CASCADE[congestion_class]
 
-    for i, adj_name in enumerate(adjacent[:2]):
-        adj_severity = cascade[i] if i < len(cascade) else "Low"
-        result.append(
+    affected: list[AffectedCorridor] = []
+    for i, name in enumerate(adjacent_names):
+        # Assign cascaded severity by position; fall back to LOW when the
+        # cascade list is shorter than the number of adjacent corridors.
+        if cascaded_classes:
+            cascade_cls = cascaded_classes[min(i, len(cascaded_classes) - 1)]
+        else:
+            # congestion_class is LOW → no meaningful cascade
+            continue
+
+        affected.append(
             AffectedCorridor(
-                name=adj_name,
-                severity=CongestionClass(adj_severity),
-                estimated_delay_minutes=DELAY_BY_SEVERITY[adj_severity],
+                name=name,
+                severity=cascade_cls.value,
+                estimated_delay_minutes=_DELAY_MINUTES[cascade_cls],
             )
         )
 
-    return result
+    return affected
