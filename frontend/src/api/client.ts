@@ -12,7 +12,7 @@ const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || 'http://localh
 // Day 1: the real backend isn't wired up yet, so every function below returns
 // hardcoded mock data shaped exactly like the real API contracts. Flip this to
 // false once /predict, /simulate, etc. are live (Day 3 integration).
-export const USE_MOCK = true;
+export const USE_MOCK = false;
 
 // ─── Mock fixtures ──────────────────────────────────────────────────────────
 
