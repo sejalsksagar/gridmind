@@ -185,14 +185,21 @@ export async function getDiversion(
   fromLat: number,
   fromLng: number,
   toLat: number,
-  toLng: number
+  toLng: number,
+  corridor?: string
 ): Promise<DiversionResponse> {
   if (USE_MOCK) return MOCK_DIVERSION;
   return withDemoFallback(
     () =>
       request<DiversionResponse>('/api/v1/diversion', {
         method: 'POST',
-        body: JSON.stringify({ from_lat: fromLat, from_lng: fromLng, to_lat: toLat, to_lng: toLng }),
+        body: JSON.stringify({
+  from_lat: fromLat,
+  from_lng: fromLng,
+  to_lat: toLat,
+  to_lng: toLng,
+  corridor,
+}),
       }),
     MOCK_DIVERSION
   );

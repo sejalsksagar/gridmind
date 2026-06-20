@@ -16,6 +16,17 @@ from fastapi import HTTPException
 
 from app.core.config import settings
 
+DIVERSION_EXITS = {
+    # toward Hebbal/Yeshwanthpur side
+    "Tumkur Road": (13.025, 77.575),
+
+    # toward ORR East
+    "Bellary Road 1": (13.020, 77.655),
+
+    # toward city center
+    "Magadi Road": (12.965, 77.555),
+}
+
 # Mappls "route_adv" directions endpoint (works with access_token query param,
 # unlike the older /{API_KEY}/route_adv/... path-based form).
 MAPPLS_DIRECTIONS_URL = (
@@ -45,6 +56,7 @@ async def get_diversion_route(
     from_lng: float,
     to_lat: float,
     to_lng: float,
+    corridor: str | None = None,
 ) -> dict:
     """
     Fetch a driving route between two points from the Mappls Directions API.
@@ -60,6 +72,10 @@ async def get_diversion_route(
     Raises:
         HTTPException(503): if the Directions API cannot be reached or errors out.
     """
+
+    if corridor in DIVERSION_EXITS:
+        to_lat, to_lng = DIVERSION_EXITS[corridor]
+
     key = _cache_key(from_lat, from_lng, to_lat, to_lng)
     if key in _route_cache:
         return _route_cache[key]

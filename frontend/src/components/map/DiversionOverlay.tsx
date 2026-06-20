@@ -10,35 +10,61 @@ export default function DiversionOverlay({ routeCoordinates, mapInstance }: Dive
   const markerRef = useRef<MarkerInstance | null>(null);
 
   useEffect(() => {
-    if (!mapInstance || !routeCoordinates || routeCoordinates.length === 0) return;
+  (polylineRef.current as any)?.remove?.();
+  polylineRef.current = null;
 
-    const path = routeCoordinates.map(([lat, lng]) => ({ lat, lng }));
+  (markerRef.current as any)?.remove?.();
+  markerRef.current = null;
 
-    const polyline = new mappls.Polyline({
-      map: mapInstance,
-      path,
-      strokeColor: '#16A34A',
-      strokeOpacity: 0.9,
-      strokeWeight: 5,
-      lineStyle: 'dashed',
-    });
-    polylineRef.current = polyline;
+  if (!mapInstance || !routeCoordinates?.length) {
+    return;
+  }
 
-    const midIndex = Math.floor(path.length / 2);
-    const marker = new mappls.Marker({
-      map: mapInstance,
-      position: path[midIndex],
-      popupHtml: '🔀 Diversion Route Active',
-    });
-    markerRef.current = marker;
+  const path = routeCoordinates.map(([lat, lng]) => ({
+    lat,
+    lng,
+  }), [routeCoordinates, mapInstance]);
 
-    return () => {
-      polylineRef.current?.setMap(null);
-      polylineRef.current = null;
-      markerRef.current?.setMap(null);
-      markerRef.current = null;
-    };
-  }, [routeCoordinates, mapInstance]);
+  const polyline = new mappls.Polyline({
+    map: mapInstance,
+    path,
+    strokeColor: '#16A34A',
+    strokeOpacity: 0.9,
+    strokeWeight: 5,
+    lineStyle: 'dashed', // remove if SDK complains
+  });
 
-  return null;
+  console.log('Created polyline:', polyline);
+
+polylineRef.current = polyline;
+
+console.log('Ref after assignment:', polylineRef.current);
+
+  const destination = path[path.length - 1];
+
+  const marker = new mappls.Marker({
+    map: mapInstance,
+    position: destination,
+    popupHtml: `
+      <div>
+        <strong>🔀 Suggested Diversion</strong>
+        <br/>
+        Alternate route to bypass congestion
+      </div>
+    `,
+  });
+
+  markerRef.current = marker;
+
+  return () => {
+    console.log('Diversion effect:', routeCoordinates);
+    (polylineRef.current as any)?.remove?.();
+    polylineRef.current = null;
+    console.log('Removing polyline', polylineRef.current);
+    (markerRef.current as any)?.remove?.();
+    markerRef.current = null;
+  };
+}, [routeCoordinates, mapInstance]);
+
+return null;
 }

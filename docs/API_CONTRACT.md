@@ -210,7 +210,7 @@ Calls the Mappls Directions API server-side and returns a decoded lat/lon route 
   "from_lng": 77.518099,
   "to_lat":   13.066721,
   "to_lng":   77.470123,
-  "avoid_corridor": "Tumkur Road"
+  "corridor": "Tumkur Road"
 }
 ```
 

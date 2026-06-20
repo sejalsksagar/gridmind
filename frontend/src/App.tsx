@@ -59,28 +59,39 @@ function App() {
     activeView === 'simulate' && simulation ? simulation.simulated.heatmap_points : prediction?.heatmap_points ?? [];
 
   async function handlePredict(params: EventParams) {
-    setEventParams(params);
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await predictEvent(params);
-      setPrediction(result);
+  // Clear previous overlays
+  setPrediction(null);
+setCorridorGeoJSON(null);
+console.log('CLEARING DIVERSION');
+  setDiversionRoute(null);
+  setSimulation(null);
 
-      const severityMap = Object.fromEntries(
-        result.affected_corridors.map((corridor) => [corridor.name, corridor.severity])
-      );
+  setEventParams(params);
+  setIsLoading(true);
+  setError(null);
 
-      setCorridorsLoading(true);
-      const geojson = await getCorridorGeoJSON(severityMap);
-      setCorridorGeoJSON(geojson);
-      setCorridorsLoading(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Prediction failed');
-    } finally {
-      setIsLoading(false);
-      setCorridorsLoading(false);
-    }
+  try {
+    const result = await predictEvent(params);
+    setPrediction(result);
+
+    const severityMap = Object.fromEntries(
+      result.affected_corridors.map((corridor) => [
+        corridor.name,
+        corridor.severity,
+      ])
+    );
+
+    setCorridorsLoading(true);
+    const geojson = await getCorridorGeoJSON(severityMap);
+    setCorridorGeoJSON(geojson);
+    setCorridorsLoading(false);
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Prediction failed');
+  } finally {
+    setIsLoading(false);
+    setCorridorsLoading(false);
   }
+}
 
   async function handleSimulate(overrides: SimulationOverrides) {
     if (!eventParams) {
@@ -107,7 +118,7 @@ function App() {
     setError(null);
     setDiversionLoading(true);
     try {
-      const result = await getDiversion(endpoint.from[0], endpoint.from[1], endpoint.to[0], endpoint.to[1]);
+      const result = await getDiversion(endpoint.from[0], endpoint.from[1], endpoint.to[0], endpoint.to[1], primaryCorridor);
       setDiversionRoute(result.route_coordinates);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Diversion route failed');
@@ -147,13 +158,14 @@ function App() {
         {/* Center column — Map */}
         <main className="flex-1 relative bg-slate-950">
           <MapView
+          //key={eventParams?.start_datetime + String(eventParams?.latitude)}
             onMapReady={setMapInstance}
             corridorsLoading={corridorsLoading}
             diversionLoading={diversionLoading}
           />
           <CorridorOverlay geojson={corridorGeoJSON} mapInstance={mapInstance} />
           <HeatmapLayer points={activeHeatmapPoints} mapInstance={mapInstance} />
-          <DiversionOverlay routeCoordinates={diversionRoute} mapInstance={mapInstance} />
+          <DiversionOverlay key={diversionRoute ? 'active' : 'none'} routeCoordinates={diversionRoute} mapInstance={mapInstance} />
           <EventMarker
             lat={eventParams?.latitude ?? null}
             lng={eventParams?.longitude ?? null}
