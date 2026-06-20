@@ -37,6 +37,7 @@ export interface PredictionResponse {
   duration_estimate_range: [number, number];
   affected_corridors: AffectedCorridor[];
   resources: ResourceRecommendation;
+  heatmap_points: HeatPoint[];
 }
 
 export interface SimulationOverrides {
@@ -49,17 +50,14 @@ export interface SimulationResponse {
   base: PredictionResponse;
   simulated: PredictionResponse;
   delta: Record<string, any>;
+  improved: boolean;
 }
 
 export interface HeatPoint {
   lat: number;
   lng: number;
   weight: number;
-}
-
-export interface HeatpointsResponse {
-  points: HeatPoint[];
-  total: number;
+  severity: string;
 }
 
 export interface DiversionResponse {

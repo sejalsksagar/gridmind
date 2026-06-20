@@ -6,7 +6,6 @@ import type { CongestionClass } from '../../types';
 interface MapViewProps {
   onMapReady?: (map: MapInstance) => void;
   corridorsLoading?: boolean;
-  heatmapLoading?: boolean;
   diversionLoading?: boolean;
 }
 
@@ -17,7 +16,6 @@ const LEGEND_ORDER: CongestionClass[] = ['Low', 'Medium', 'High', 'Severe'];
 export default function MapView({
   onMapReady,
   corridorsLoading = false,
-  heatmapLoading = false,
   diversionLoading = false,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -60,11 +58,6 @@ export default function MapView({
 
       {mapReady && (
         <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
-          {heatmapLoading && (
-            <span className="bg-slate-900/80 text-slate-300 text-xs px-2 py-1 rounded">
-              Loading heatmap...
-            </span>
-          )}
           {corridorsLoading && (
             <span className="bg-slate-900/80 text-slate-300 text-xs px-2 py-1 rounded">
               Loading corridors...

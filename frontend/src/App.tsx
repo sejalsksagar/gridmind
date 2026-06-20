@@ -15,7 +15,6 @@ import {
   predictEvent,
   simulateEvent,
   getCorridorGeoJSON,
-  getHeatpoints,
   getDiversion,
 } from './api/client';
 import { DEMO_SCENARIOS } from './constants/demoScenarios';
@@ -42,7 +41,6 @@ function App() {
   const [eventParams, setEventParams] = useState<EventParams | null>(null);
   const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
   const [simulation, setSimulation] = useState<SimulationResponse | null>(null);
-  const [heatpoints, setHeatpoints] = useState<HeatPoint[]>([]);
   const [corridorGeoJSON, setCorridorGeoJSON] = useState<any | null>(null);
   const [diversionRoute, setDiversionRoute] = useState<[number, number][] | null>(null);
   const [mapInstance, setMapInstance] = useState<MapInstance | null>(null);
@@ -51,8 +49,14 @@ function App() {
   const [activeView, setActiveView] = useState<ActiveView>('predict');
   const [error, setError] = useState<string | null>(null);
   const [corridorsLoading, setCorridorsLoading] = useState(false);
-  const [heatmapLoading, setHeatmapLoading] = useState(false);
   const [diversionLoading, setDiversionLoading] = useState(false);
+
+  // The heatmap always reflects whichever prediction is currently "on screen":
+  // the base prediction on the Prediction tab, or the simulated (post-override)
+  // result on the Simulation tab once one exists. No separate fetch — both
+  // PredictionResponse objects already carry heatmap_points inline (v2.1).
+  const activeHeatmapPoints: HeatPoint[] =
+    activeView === 'simulate' && simulation ? simulation.simulated.heatmap_points : prediction?.heatmap_points ?? [];
 
   async function handlePredict(params: EventParams) {
     setEventParams(params);
@@ -70,17 +74,11 @@ function App() {
       const geojson = await getCorridorGeoJSON(severityMap);
       setCorridorGeoJSON(geojson);
       setCorridorsLoading(false);
-
-      setHeatmapLoading(true);
-      const heatpointsResponse = await getHeatpoints();
-      setHeatpoints(heatpointsResponse.points);
-      setHeatmapLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Prediction failed');
     } finally {
       setIsLoading(false);
       setCorridorsLoading(false);
-      setHeatmapLoading(false);
     }
   }
 
@@ -151,11 +149,10 @@ function App() {
           <MapView
             onMapReady={setMapInstance}
             corridorsLoading={corridorsLoading}
-            heatmapLoading={heatmapLoading}
             diversionLoading={diversionLoading}
           />
           <CorridorOverlay geojson={corridorGeoJSON} mapInstance={mapInstance} />
-          <HeatmapLayer points={heatpoints} mapInstance={mapInstance} />
+          <HeatmapLayer points={activeHeatmapPoints} mapInstance={mapInstance} />
           <DiversionOverlay routeCoordinates={diversionRoute} mapInstance={mapInstance} />
           <EventMarker
             lat={eventParams?.latitude ?? null}

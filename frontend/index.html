@@ -5,12 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GridMind — AI Traffic Command Center</title>
 
-    <!-- MapmyIndia Maps JS SDK -->
+    <!-- MapmyIndia (Mappls) Maps JS SDK -->
     <!-- REPLACE WITH MAPPLS KEY -->
+    <!--
+      The SDK is not a REST endpoint — it's a JS library that announces its own
+      readiness via the `callback` query param, fired once `mappls` is fully
+      initialized and safe to use. The callback function MUST be defined before
+      the SDK <script> tag below: that tag carries `async`, so the browser may
+      execute it as soon as it finishes downloading — including before parsing
+      reaches anything further down the page. Defining the callback first removes
+      that race entirely, rather than relying on polling for `window.mappls`.
+    -->
+    <script>
+      window.onMapplsSDKReady = function () {
+        window.mapplsSDKReady = true;
+        window.dispatchEvent(new Event('mappls-sdk-ready'));
+      };
+    </script>
     <script
-      src="https://apis.mappls.com/advancedmaps/api/lknudnksjmmxaqvhydjhzqpknzdjndrmmoev/map_sdk?layer=vector&v=3.0"
+      src="https://apis.mappls.com/advancedmaps/api/lknudnksjmmxaqvhydjhzqpknzdjndrmmoev/map_sdk?layer=vector&v=3.0&callback=onMapplsSDKReady"
       async
-      defer
     ></script>
     <link
       rel="stylesheet"

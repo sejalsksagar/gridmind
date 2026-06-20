@@ -3,7 +3,6 @@ import type {
   SimulationOverrides,
   PredictionResponse,
   SimulationResponse,
-  HeatpointsResponse,
   DiversionResponse,
 } from '../types';
 
@@ -38,6 +37,10 @@ const MOCK_PREDICTION: PredictionResponse = {
     signal_overrides: 3,
     rationale: 'Severe congestion. Maximum deployment required.',
   },
+  heatmap_points: [
+    { lat: 13.040004, lng: 77.518099, weight: 1.0, severity: 'Severe' },
+    { lat: 13.0681, lng: 77.58, weight: 0.75, severity: 'High' },
+  ],
 };
 
 const MOCK_SIMULATED_PREDICTION: PredictionResponse = {
@@ -56,6 +59,10 @@ const MOCK_SIMULATED_PREDICTION: PredictionResponse = {
     signal_overrides: 2,
     rationale: 'Moderate congestion. Barricade and signal adjustment recommended.',
   },
+  heatmap_points: [
+    { lat: 13.040004, lng: 77.518099, weight: 0.75, severity: 'High' },
+    { lat: 13.0681, lng: 77.58, weight: 0.5, severity: 'Medium' },
+  ],
 };
 
 const MOCK_SIMULATION: SimulationResponse = {
@@ -69,15 +76,7 @@ const MOCK_SIMULATION: SimulationResponse = {
     signal_overrides: -1,
     confidence_change: -0.14,
   },
-};
-
-const MOCK_HEATPOINTS: HeatpointsResponse = {
-  points: [
-    { lat: 13.040004, lng: 77.518099, weight: 1.0 },
-    { lat: 12.971599, lng: 77.594563, weight: 0.5 },
-    { lat: 12.934518, lng: 77.626579, weight: 0.75 },
-  ],
-  total: 3,
+  improved: true,
 };
 
 const MOCK_DIVERSION: DiversionResponse = {
@@ -180,15 +179,6 @@ export async function getCorridorGeoJSON(
   if (USE_MOCK) return MOCK_GEOJSON;
   const query = severityMap ? `?severity_map=${encodeURIComponent(JSON.stringify(severityMap))}` : '';
   return withDemoFallback(() => request(`/api/v1/corridors/geojson${query}`), MOCK_GEOJSON);
-}
-
-export async function getHeatpoints(severity?: string): Promise<HeatpointsResponse> {
-  if (USE_MOCK) return MOCK_HEATPOINTS;
-  const query = severity ? `?severity=${encodeURIComponent(severity)}` : '';
-  return withDemoFallback(
-    () => request<HeatpointsResponse>(`/api/v1/heatpoints${query}`),
-    MOCK_HEATPOINTS
-  );
 }
 
 export async function getDiversion(

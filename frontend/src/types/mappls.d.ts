@@ -3,6 +3,13 @@
 // so TypeScript has no way to know this global exists without this declaration.
 // Extend the option/return shapes here as more SDK features are used.
 
+interface Window {
+  // Set by the inline script in index.html once the SDK's own `callback`
+  // query param fires — see useMapmyIndia.ts for how this is consumed.
+  mapplsSDKReady?: boolean;
+  onMapplsSDKReady?: () => void;
+}
+
 interface MapInstance {
   setCenter(latlng: { lat: number; lng: number }): void;
   setZoom(zoom: number): void;

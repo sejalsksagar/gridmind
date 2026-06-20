@@ -1,27 +1,31 @@
 import { useState, useEffect } from 'react';
 
 /**
- * The MapmyIndia SDK loads asynchronously from a CDN <script> tag (see index.html).
- * There is no module to import and no load event we can reliably hook into across
- * browsers, so we poll for the global `mappls` object until it exists.
+ * The MapmyIndia (Mappls) SDK is not a module — it's loaded via a CDN <script>
+ * tag in index.html, which announces readiness through the `callback` query
+ * param pointed at `window.onMapplsSDKReady`. That handler sets
+ * `window.mapplsSDKReady` and dispatches a 'mappls-sdk-ready' event.
+ *
+ * This hook listens for that event rather than polling for `typeof mappls`,
+ * which avoids the race where polling could check at the wrong moment relative
+ * to the SDK's actual init sequence. It also checks the flag synchronously on
+ * mount, in case the SDK finished loading before this component rendered.
  */
 export function useMapmyIndia() {
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
-    if (typeof mappls !== 'undefined') {
+    if (window.mapplsSDKReady) {
       setMapReady(true);
       return;
     }
 
-    const interval = setInterval(() => {
-      if (typeof mappls !== 'undefined') {
-        setMapReady(true);
-        clearInterval(interval);
-      }
-    }, 200);
+    function handleReady() {
+      setMapReady(true);
+    }
 
-    return () => clearInterval(interval);
+    window.addEventListener('mappls-sdk-ready', handleReady);
+    return () => window.removeEventListener('mappls-sdk-ready', handleReady);
   }, []);
 
   return { mapReady };
