@@ -158,7 +158,6 @@ console.log('CLEARING DIVERSION');
         {/* Center column — Map */}
         <main className="flex-1 relative bg-slate-950">
           <MapView
-          //key={eventParams?.start_datetime + String(eventParams?.latitude)}
             onMapReady={setMapInstance}
             corridorsLoading={corridorsLoading}
             diversionLoading={diversionLoading}
