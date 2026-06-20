@@ -22,7 +22,7 @@ export default function EventMarker({ lat, lng, mapInstance, label }: EventMarke
     markerRef.current = marker;
 
     return () => {
-      markerRef.current?.setMap(null);
+      (markerRef.current as any)?.remove?.();
       markerRef.current = null;
     };
   }, [lat, lng, mapInstance, label]);

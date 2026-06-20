@@ -18,7 +18,7 @@ export default function EventForm({ onSubmit, isLoading }: EventFormProps) {
   const [eventCause, setEventCause] = useState(DEMO_EVENT.event_cause);
   const [corridor, setCorridor] = useState(DEMO_EVENT.corridor);
   const [requiresRoadClosure, setRequiresRoadClosure] = useState(DEMO_EVENT.requires_road_closure);
-  const [startDatetime, setStartDatetime] = useState('2024-06-01T18:00');
+  const [startDatetime, setStartDatetime] = useState('2026-06-20T18:00');
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

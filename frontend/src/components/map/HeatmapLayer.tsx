@@ -22,9 +22,9 @@ export default function HeatmapLayer({ points, mapInstance }: HeatmapLayerProps)
     heatmapRef.current = heatmap;
 
     return () => {
-      heatmapRef.current?.setMap(null);
-      heatmapRef.current = null;
-    };
+  (heatmapRef.current as any)?.remove?.();
+  heatmapRef.current = null;
+};
   }, [points, mapInstance]);
 
   return null;

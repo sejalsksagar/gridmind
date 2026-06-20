@@ -26,7 +26,7 @@ export default function SimulationControls({ onSimulate, isLoading }: Simulation
 
   return (
     <div className="bg-slate-900 rounded-lg border border-slate-800 p-4 shadow-lg space-y-4">
-      <h2 className="text-white text-sm font-semibold uppercase tracking-wide">Simulation Controls</h2>
+      <h2 className="text-white text-sm font-semibold uppercase tracking-wide">Scenario Explorer</h2>
 
       {/* a) Road Closure toggle */}
       <div className="flex items-center justify-between">
@@ -112,7 +112,7 @@ export default function SimulationControls({ onSimulate, isLoading }: Simulation
 
       {/* e) Helper text */}
       <p className="text-slate-500 text-xs">
-        Adjust parameters to see how interventions reduce congestion impact.
+        Change event conditions and compare predicted traffic impact.
       </p>
     </div>
   );

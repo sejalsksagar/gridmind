@@ -33,11 +33,15 @@ export default function CorridorOverlay({ geojson, mapInstance }: CorridorOverla
     polylinesRef.current = polylines;
 
     return () => {
-      for (const polyline of polylinesRef.current) {
-        polyline.setMap(null);
-      }
-      polylinesRef.current = [];
-    };
+  for (const polyline of polylinesRef.current) {
+    try {
+      polyline?.setMap?.(null);
+    } catch (e) {
+      console.warn('Failed to remove polyline', e);
+    }
+  }
+  polylinesRef.current = [];
+};
   }, [geojson, mapInstance]);
 
   return null;

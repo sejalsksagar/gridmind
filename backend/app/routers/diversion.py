@@ -12,7 +12,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
-from app.services.diversion import get_diversion_route
+from app.services.diversion import (
+    DIVERSION_EXITS,
+    get_diversion_route,
+)
 
 router = APIRouter()
 
@@ -22,7 +25,7 @@ class DiversionRequest(BaseModel):
     from_lng: float = Field(ge=77.3, le=78.0)
     to_lat: float
     to_lng: float
-    avoid_corridor: str | None = None
+    corridor: str | None = None
 
 
 class DiversionResponse(BaseModel):
@@ -74,6 +77,11 @@ def _build_fallback_route(
 
 @router.post("/diversion", response_model=DiversionResponse)
 async def diversion_route(payload: DiversionRequest) -> DiversionResponse:
+    to_lat = payload.to_lat
+    to_lng = payload.to_lng
+
+    if payload.corridor in DIVERSION_EXITS:
+        to_lat, to_lng = DIVERSION_EXITS[payload.corridor]
     if not settings.MAPPLS_API_KEY:
         return _build_fallback_route(
             payload.from_lat, payload.from_lng, payload.to_lat, payload.to_lng
@@ -84,5 +92,6 @@ async def diversion_route(payload: DiversionRequest) -> DiversionResponse:
         from_lng=payload.from_lng,
         to_lat=payload.to_lat,
         to_lng=payload.to_lng,
+        corridor=payload.corridor,
     )
     return DiversionResponse(**result)
