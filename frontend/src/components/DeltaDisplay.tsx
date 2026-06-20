@@ -90,7 +90,7 @@ export default function DeltaDisplay({ simulation }: DeltaDisplayProps) {
 
       {allImproved ? (
         <div className="bg-green-950 border border-green-800 text-green-300 text-sm rounded-md px-3 py-2">
-          Intervention reduces peak demand. Proceed with diversion.
+          Intervention reduces peak demand.
         </div>
       ) : (
         <div className="bg-amber-950 border border-amber-800 text-amber-300 text-sm rounded-md px-3 py-2">

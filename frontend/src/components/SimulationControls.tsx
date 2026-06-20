@@ -13,7 +13,9 @@ function formatHour(hour: number): string {
 }
 
 export default function SimulationControls({ onSimulate, isLoading }: SimulationControlsProps) {
-  const [localOverrides, setLocalOverrides] = useState<SimulationOverrides>({});
+  const [localOverrides, setLocalOverrides] = useState<SimulationOverrides>({
+  requires_road_closure: false,
+  });
 
   const hasOverrides =
     localOverrides.requires_road_closure !== undefined ||
