@@ -1,118 +1,68 @@
-// ─── Enums / Literals ─────────────────────────────────────────────────────────
+// Core domain types shared across the GridMind frontend.
+// These mirror the backend's Pydantic response/request shapes exactly —
+// keep field names and casing in sync with app/models/schemas.py.
 
-export type EventType = 'planned' | 'unplanned'
+export type CongestionClass = 'Low' | 'Medium' | 'High' | 'Severe';
+export type DurationClass = 'Short' | 'Medium' | 'Long';
 
-export type EventCause =
-  | 'vehicle_breakdown'
-  | 'accident'
-  | 'construction'
-  | 'public_event'
-  | 'tree_fall'
-  | 'water_logging'
-  | 'pot_holes'
-  | 'road_conditions'
-  | 'congestion'
-  | 'procession'
-  | 'vip_movement'
-  | 'protest'
-  | 'others'
-
-export type CongestionClass = 'Low' | 'Medium' | 'High' | 'Severe'
-export type DurationClass = 'Short' | 'Medium' | 'Long'
-
-export type VehType =
-  | 'bmtc_bus'
-  | 'heavy_vehicle'
-  | 'lcv'
-  | 'private_bus'
-  | 'private_car'
-  | 'truck'
-  | 'ksrtc_bus'
-  | 'taxi'
-  | 'auto'
-  | 'Unknown'
-
-// ─── Request types ─────────────────────────────────────────────────────────────
-
-export interface EventInput {
-  event_type: EventType
-  event_cause: EventCause
-  latitude: number
-  longitude: number
-  requires_road_closure: boolean
-  corridor: string
-  start_datetime: string      // ISO8601 with timezone
-  veh_type?: VehType
-}
-
-export interface SimulationOverrides {
-  requires_road_closure?: boolean
-  event_cause?: EventCause
-  start_hour?: number         // 0–23
-}
-
-export interface SimulationInput {
-  base_event: EventInput
-  overrides: SimulationOverrides
-}
-
-// ─── Response types ────────────────────────────────────────────────────────────
-
-export interface ResourceRecommendation {
-  officers: number
-  barricades: number
-  diversions: number
-  signal_overrides: number
-  rationale: string
+export interface EventParams {
+  event_type: string;
+  event_cause: string;
+  latitude: number;
+  longitude: number;
+  requires_road_closure: boolean;
+  corridor: string;
+  start_datetime: string;
+  veh_type?: string;
 }
 
 export interface AffectedCorridor {
-  name: string
-  severity: CongestionClass
-  estimated_delay_minutes: number
+  name: string;
+  severity: CongestionClass;
+  estimated_delay_minutes: number;
+}
+
+export interface ResourceRecommendation {
+  officers: number;
+  barricades: number;
+  diversions: number;
+  signal_overrides: number;
+  rationale: string;
 }
 
 export interface PredictionResponse {
-  congestion_class: CongestionClass
-  confidence: number
-  duration_class: DurationClass
-  duration_estimate_range: [number, number]
-  affected_corridors: AffectedCorridor[]
-  resources: ResourceRecommendation
+  congestion_class: CongestionClass;
+  confidence: number;
+  duration_class: DurationClass;
+  duration_estimate_range: [number, number];
+  affected_corridors: AffectedCorridor[];
+  resources: ResourceRecommendation;
+  heatmap_points: HeatPoint[];
 }
 
-export interface SimulationDelta {
-  congestion_class: string          // e.g. "Severe → High"
-  officers: number
-  barricades: number
-  diversions: number
-  confidence_change: number
+export interface SimulationOverrides {
+  requires_road_closure?: boolean;
+  event_cause?: string;
+  start_hour?: number;
 }
 
 export interface SimulationResponse {
-  base: PredictionResponse
-  simulated: PredictionResponse
-  delta: SimulationDelta
-  improved: boolean
+  base: PredictionResponse;
+  simulated: PredictionResponse;
+  delta: Record<string, any>;
+  improved: boolean;
 }
 
-export interface HealthResponse {
-  status: string
-  models_loaded: boolean
-  mock_mode: boolean
-  version: string
-  environment: string
+export interface HeatPoint {
+  lat: number;
+  lng: number;
+  weight: number;
+  severity: string;
 }
 
-// ─── UI-specific types ─────────────────────────────────────────────────────────
-
-export type TabId = 'predict' | 'simulate'
-
-export interface AppState {
-  eventParams: Partial<EventInput>
-  prediction: PredictionResponse | null
-  simulation: SimulationResponse | null
-  isLoading: boolean
-  error: string | null
-  activeTab: TabId
+export interface DiversionResponse {
+  route_coordinates: [number, number][];
+  total_distance_m: number;
+  total_duration_s: number;
+  summary: string;
 }
