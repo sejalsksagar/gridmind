@@ -1,23 +1,21 @@
 import { useEffect, useRef } from "react";
 
+const MAP_CONTAINER_ID = "mappls-map-container";
+
 export default function MapView({ onMapReady }: any) {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      console.log("checking sdk...", window.mappls);
-
       if (window.mappls && mapRef.current) {
         clearInterval(timer);
 
-        const map = new window.mappls.Map(mapRef.current, {
+        const map = new window.mappls.Map(MAP_CONTAINER_ID, {
           center: [12.9716, 77.5946],
           zoom: 11,
         });
 
         onMapReady?.(map);
-
-        console.log("MAP CREATED");
       }
     }, 500);
 
@@ -26,6 +24,7 @@ export default function MapView({ onMapReady }: any) {
 
   return (
     <div
+      id={MAP_CONTAINER_ID}
       ref={mapRef}
       style={{
         width: "100%",
