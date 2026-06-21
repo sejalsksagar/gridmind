@@ -30,7 +30,7 @@
 | **Kaggle — EDA Notebook** | https://www.kaggle.com/code/sejalkshirsagar/gridmind-eda |
 | **Kaggle — Event Impact Prediction Pipeline** | https://www.kaggle.com/code/sejalkshirsagar/gridmind-event-impact-prediction-pipeline |
 | **Kaggle — Demo Validation & Feature Importance** | https://www.kaggle.com/code/sejalkshirsagar/gridmind-demo-validation-feature-importance |
-| **Demo Video** | `<Yet to make>` |
+| **Demo Video** | https://youtu.be/x1hHTirVF-0 |
 
 > ⚠️ Note: the backend runs on Render's free tier and cold-starts after inactivity. The first request after idle time can take 30–50 seconds — this is expected, not a bug. Visiting `/docs` once before judging warms it up.
 
@@ -68,8 +68,8 @@ Our answer: encode the operational judgment that experienced traffic controllers
 ### Why MapmyIndia (Mappls)
 We chose Mappls over Leaflet/OpenStreetMap or Google Maps because: (1) its tiles already carry accurate Bengaluru corridor names and road geometry matching our dataset out of the box, (2) it ships a native `HeatmapLayer` we'd otherwise have to build by hand, and (3) its Directions API gives us a real routable diversion path on the free tier — Indian smart-city deployments (BBMP/BTP) already standardize on Mappls, so this is also the realistic production choice, not just a hackathon convenience.
 
-### ML approach (short version — full detail in the technical document)
-No ground-truth congestion measurements exist in the dataset, so we derived a **composite severity label** from operational signals already present (road closure flag, incident priority, event cause category, whether it's on a named corridor, and resolved duration), then trained a **LightGBM multiclass classifier** for severity and a second one for duration. Full label construction, feature engineering, and honest discussion of the model's macro F1 (0.96 severity / 0.61 duration) is in the technical document and the Kaggle notebooks linked above.
+### ML approach 
+No ground-truth congestion measurements exist in the dataset, so we derived a **composite severity label** from operational signals already present (road closure flag, incident priority, event cause category, whether it's on a named corridor, and resolved duration), then trained a **LightGBM multiclass classifier** for severity and a second one for duration. Full label construction, feature engineering, and honest discussion of the model's macro F1 (0.96 severity / 0.60 duration) is in the technical document and the Kaggle notebooks linked above.
 
 ---
 
@@ -126,15 +126,15 @@ graph TD
 
 **1. Prediction view — Severe congestion forecast for a Tumkur Road construction closure, with affected corridors and live confidence score:**
 
-`![Prediction screenshot — SEVERE congestion class, 100% confidence, affected corridors Tumkur Road/Bellary Road 1/Magadi Road](docs/screenshots/01-prediction.png)`
+![Prediction screenshot — SEVERE congestion class, 100% confidence, affected corridors Tumkur Road/Bellary Road 1/Magadi Road](docs/screenshots/01-prediction.png)
 
 **2. Resource recommendation panel — officer/barricade/diversion/signal-override deployment with rationale, plus the diversion route activation control:**
 
-`![Recommended resources screenshot — 18 officers, 5 barricades, 2 diversions, 3 signal overrides](docs/screenshots/02-resources.png)`
+![Recommended resources screenshot — 18 officers, 5 barricades, 2 diversions, 3 signal overrides](docs/screenshots/02-resources.png)
 
 **3. Simulation panel — comparing base vs. modified event conditions:**
 
-`![Simulation panel screenshot — severity comparison and resource delta](docs/screenshots/03-simulation.png)`
+![Simulation panel screenshot — severity comparison and resource delta](docs/screenshots/03-simulation.png)
 
 
 ---
@@ -176,4 +176,4 @@ gridmind/
 
 ---
 
-Built for Gridlock Hackathon 2.0 (Flipkart).
+Built for Gridlock Hackathon 2.0 (Flipkart) 2026
